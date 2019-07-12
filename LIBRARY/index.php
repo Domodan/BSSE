@@ -1,3 +1,7 @@
+
+<?php echo "Start Here"; ?>
+
+
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
     <head>
@@ -5,39 +9,30 @@
         <meta name="description" content="Library Materials Collections">
         <meta name="keywords" content="Dissertations, Thesis, Journals, Books, Gulu University Library">
         <meta name="author" content="Domo Daniel Ongom">
-        <meta http-equiv="refresh" content="300">
+        <meta http-equiv="refresh" content="30">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <title>Library Information Circulation</title>
 
-        <link rel="stylesheet" href="/css/bootstrap.min.css">
-        <link rel="stylesheet" href="/css/all.min.css">
-        <link rel="stylesheet" href="/css/w3.css">
-        <link rel="stylesheet" href="/css/style.css">
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/all.min.css">
+        <link rel="stylesheet" href="css/w3.css">
+        <link rel="stylesheet" href="css/style.css">
 
-        <script type="text/javascript" src="/js/jquery.js"></script>
-        <script type="text/javascript" src="/js/all.min.js"></script>
-        <script type="text/javascript" src="/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="js/jquery.js"></script>
+        <script type="text/javascript" src="js/all.min.js"></script>
+        <script type="text/javascript" src="js/bootstrap.min.js"></script>
     </head>
     <body>
         <!-- Header Section -->
         <header>
-            <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i>
-            <span class="sr-only">Loading...</span>
-
-            <i class="fab fa-facebook fa-3x"></i>
-
-            <i class="fa fa-cog fa-spin fa-3x fa-fw"></i>
-            <span class="sr-only">Loading...</span>
-
-            <i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i>
-            <span class="sr-only">Loading...</span>
-
-            <div class="w3-row w3-white w3-padding">
+            <div class="w3-row w3-pdding" style="background-image: url(/images/background.jpeg)">
                 <div class="w3-half" style="margin:4px 0 6px 0">
-                    <a href='https://www.w3schools.com'>Gulu University</a>
+                    <a href='https://www.w3schools.com'>
+                        <img src='images/background.jpeg' alt='W3Schools.com' style="width:2000px;height:40px;">
+                    </a>
                 </div>
-                <div class="w3-half w3-margin-top w3-wide w3-hide-medium w3-hide-small">
+                <div class="w3-half w3-margin-top w3-wide w3-hide-medium w3-hide-small" id="head">
                     <div class="w3-right">Gulu University Library</div>
                 </div>
             </div>
@@ -46,7 +41,7 @@
         <nav class="navbar navbar-expand-md bg-dark navbar-dark sticky-top">
             <!-- Brand -->
             <a class="navbar-brand" href="#Logo">
-                <img src='/images/gulu.jpeg' alt='Gulu University Library' class="rounded" style="width:60px;height:50px;">
+                <img src='images/gulu.jpeg' alt='Gulu University Library' class="rounded" style="width:60px;height:50px;">
             </a>
             <!-- Toggler/collapsibe Button -->
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
@@ -56,7 +51,7 @@
             <div class="collapse navbar-collapse" id="collapsibleNavbar">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="#Home">Home</a>
+                        <a class="nav-link" href="index.php?page=home">Home</a>
                     </li>
                     <!-- Dropdown Menus -->
                     <li class="nav-item dropdown">
@@ -64,11 +59,11 @@
                             Collections
                         </a>
                         <div class="dropdown-menu">
-                            <a class="dropdown-item" href="#Reports">Reports</a>
-                            <a class="dropdown-item" href="#Books">Books</a>
-                            <a class="dropdown-item" href="#Thesis">Thesis</a>
-                            <a class="dropdown-item" href="#Journals">Journals</a>
-                            <a class="dropdown-item" href="#Dissertations">Dissertations</a>
+                            <a class="dropdown-item" href="index.php?page=reports">Reports</a>
+                            <a class="dropdown-item" href="index.php?page=books">Books</a>
+                            <a class="dropdown-item" href="index.php?page=thesis">Thesis</a>
+                            <a class="dropdown-item" href="index.php?page=journals">Journals</a>
+                            <a class="dropdown-item" href="index.php?page=dissertations">Dissertations</a>
                         </div>
                     </li>
                     <li class="nav-item dropdown">
@@ -76,9 +71,9 @@
                             Services
                         </a>
                         <div class="dropdown-menu">
-                            <a class="dropdown-item" href="#Circulation">Circulation</a>
-                            <a class="dropdown-item" href="#Photocopying">Photocopying</a>
-                            <a class="dropdown-item" href="#Staff-Info">Staff-Info</a>
+                            <a class="dropdown-item" href="index.php?page=circulation">Circulation</a>
+                            <a class="dropdown-item" href="index.php?page=photocopying">Photocopying</a>
+                            <a class="dropdown-item" href="index.php?page=staff-info">Staff-Info</a>
                         </div>
                     </li>
                     <li class="nav-item dropdown">
@@ -86,56 +81,75 @@
                             Reports
                         </a>
                         <div class="dropdown-menu">
-                            <a class="dropdown-item" href="#Daily">Daily</a>
-                            <a class="dropdown-item" href="#Monthly">Monthly</a>
-                            <a class="dropdown-item" href="#Annual">Annual</a>
+                            <a class="dropdown-item" href="index.php?page=daily">Daily</a>
+                            <a class="dropdown-item" href="index.php?page=monthly">Monthly</a>
+                            <a class="dropdown-item" href="index.php?page=annual">Annual</a>
                         </div>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="#Catalogue">Catalogue</a>
+                        <a class="nav-link" href="index.php?page=catalogue">Catalogue</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#About-us">About Us</a>
+                        <a class="nav-link" href="index.php?page=about-us">About Us</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#Gallery">Gallery</a>
+                        <a class="nav-link" href="index.php?page=gallery">Gallery</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#Ask-Librarian">Ask Librarian</a>
+                        <a class="nav-link" href="index.php?page=ask-librarian">Ask Librarian</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#Login">Log In</a>
+                        <a class="nav-link" href="index.php?page=logout">Log Out</a>
                     </li>
-
-                    <!-- Search Form -->
-                    <form class="form-inline pull-right" action="" method="post">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text">@</span>
-                            </div>
-                            <input class="form-control" type="text" placeholder="Search">
-                            <button class="btn btn-success" type="submit">Search</button>
-                        </div>
-                    </form>
                 </ul>
             </div>
+            <!-- Search Form -->
+            <form class="form-inline text-right" action="" method="post">
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">@</span>
+                    </div>
+                    <input class="form-control mr-sm-1 my-sm-0 rounded-right" type="text" placeholder="Search">
+                    <button class="btn btn-outline-success rounded" type="submit">Search</button>
+                </div>
+            </form>
         </nav>
         <!-- Body of the Page -->
         <div class="container-fluid">
+
             <!-- Row Number One in the Body page -->
             <div class="row">
                 <!-- Left Side Section of the Page -->
-                <div class="col-lg-3 col-md-6 border">
+                <div class="col-lg-2 col-md-6 border ml-4 mr-3 my-4 p-3">
                     <p>Left Side Section with some offset</p>
-                    <i class="fab fa-whatsapp fa-3x fa-pull-right fa-border"></i>
+                    <i class="fab fa-whatsapp fa-3x fa-pull-right fa-border"></i><br>
+
+                    <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><br><br>
+                    <span class="sr-only">Loading...</span>
+
+                    <i class="fab fa-facebook fa-3x"></i><br><br>
+
+                    <i class="fa fa-cog fa-spin fa-3x fa-fw"></i><br><br>
+                    <span class="sr-only">Loading...</span>
+
+                    <i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i><br>
+                    <span class="sr-only">Loading...</span>
                 </div>
                 <!-- Main Body of the Page -->
-                <div class="col-lg-9 col-md-6">
+                <div class="col-lg-8 col-md-6">
+                    <!-- Home Page -->
+                    <div class="row mt-4 mb-5">
+                        <div class="col border ml-4 mr-5 p-3">
+                            <div class="">
+                                Not Now
+                            </div>
+                        </div>
+                    </div>
                     <!-- Login Form With an Alternative Sign UP -->
-                    <div class="row">
-                        <div class="col-lg-6 col-md-6">
-                            <div class="login-form border">
+                    <div class="row my-4">
+                        <div class="col-lg-6 col-md-6 border ml-4 mr-3 p-3">
+                            <div class="login-form">
                                 <h1>Login Form</h1>
                                 <form class="" action="" method="post">
                                     <div class="form-group">
@@ -150,9 +164,9 @@
                                 </form>
                             </div>
                         </div>
-                        <!-- Alternative Sign Up -->
-                        <div class="col-lg-6 col-md-6">
-                            <div class="alternative-login border">
+                        <!-- Alternative Login -->
+                        <div class="col-lg-5 col-md-5 border ml-4 p-3">
+                            <div class="alternative-login">
                                 <h3>Log In With</h3>
                                 <button type="button" class="btn btn-outline-primary btn-block btn-lg"> Facebook</button>
                                 <button type="button" class="btn btn-outline-primary btn-block btn-lg"> Twitter</button>
@@ -161,9 +175,9 @@
                         </div>
                     </div>
                     <!-- Registration Form  Page-->
-                    <div class="row">
-                        <div class="col-lg-6 col-md-6">
-                            <div class="form border">
+                    <div class="row my-5">
+                        <div class="col-lg-6 col-md-6 border ml-4 mr-3 p-3">
+                            <div class="form">
                                 <h1>Registration Form</h1>
                                 <form action="">
                                     <div class="form-group">
@@ -195,9 +209,9 @@
                                 </form>
                             </div>
                         </div>
-                        <div class="col-lg-6 col-md-6">
-                            <!-- Alternative Sign Up -->
-                            <div class="alternative-signup border">
+                        <!-- Alternative Sign Up -->
+                        <div class="col-lg-5 col-md-5 border ml-4 p-3">
+                            <div class="alternative-signup">
                                 <h3>Sign Up With</h3>
                                 <button type="button" class="btn btn-outline-primary btn-block btn-lg"> Facebook</button>
                                 <button type="button" class="btn btn-outline-primary btn-block btn-lg"> Twitter</button>
@@ -206,8 +220,8 @@
                         </div>
                     </div>
                     <!-- Page Available Books -->
-                    <div class="row">
-                        <div class="col">
+                    <div class="row my-4">
+                        <div class="col border ml-4 mr-5 py-2 px-4">
                             <div class="books">
 
                                 <h2>Available Books</h2>
@@ -236,8 +250,8 @@
                         </div>
                     </div>
                     <!-- Available Dissertations -->
-                    <div class="row">
-                        <div class="col">
+                    <div class="row my-5">
+                        <div class="col border ml-4 mr-5 py-2 px-4">
                             <div class="dissertations">
                                 <h2>Available Dissertations</h2>
                                 <table class="table table-bordered table-striped table-hover">
@@ -265,8 +279,8 @@
                         </div>
                     </div>
                     <!-- Available Thesis-->
-                    <div class="row">
-                        <div class="col">
+                    <div class="row my-4">
+                        <div class="col border ml-4 mr-5 py-2 px-4">
                             <div class="dissertations">
                                 <h2>Available Thesis</h2>
                                 <table class="table table-bordered table-striped table-hover">
@@ -294,8 +308,8 @@
                         </div>
                     </div>
                     <!-- Available Journals -->
-                    <div class="row">
-                        <div class="col">
+                    <div class="row my-5">
+                        <div class="col border ml-4 mr-5 py-2 px-4">
                             <div class="dissertations">
                                 <h2>Available Journals</h2>
                                 <table class="table table-bordered table-striped table-hover">
@@ -325,13 +339,29 @@
                             </div>
                         </div>
                     </div><!-- End of the Jounals -->
+                </div><!-- End of the Main Body -->
+                <!-- Right Side Section of the Page -->
+                <div class="col border my-4 mr-4">
+                    Lorem Ipsum is simply dummy
+                    <i class="fab fa-whatsapp fa-3x fa-pull-right fa-border"></i><br>
+
+                    <i class="fa fa-spinner fa-spin fa-3x fa-fw"></i><br><br>
+                    <span class="sr-only">Loading...</span>
+
+                    <i class="fab fa-facebook fa-3x"></i><br><br>
+
+                    <i class="fa fa-cog fa-spin fa-3x fa-fw"></i><br><br>
+                    <span class="sr-only">Loading...</span>
+
+                    <i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i><br>
+                    <span class="sr-only">Loading...</span>
                 </div>
             </div>
         </div>
         <!-- Footer goes here -->
-        <div class="footer">
+        <div class="footer mt-3 mb-5">
             <div class="row">
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-3 col-md-6 border ml-5 mr-3 py-3 background">
                     <div class="container">
                         <h4>WEBSITE NAME</h4>
                         <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. </p>
@@ -339,10 +369,10 @@
                         </p>
                     </div>
                 </div>
-                <div class="col-lg-2 col-md-6">
+                <div class="col-lg-2 col-md-6 border ml-5 mr-3 py-3 background">
                     <div class="container">
                         <h4>Useful Links</h4>
-                        <ul class="list-group">
+                        <ul class="list-group" style="list-style-type:none;">
                             <li>
                                 <a href="#item1" class="list-group-item list-group-item-success"> First Item </a>
                             </li>
@@ -358,7 +388,7 @@
                         </ul>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-2 col-md-6 border ml-5 mr-3 py-3 background">
                     <div class="container">
                         <h4>Contact Us</h4>
                         <address class="address">
@@ -373,7 +403,7 @@
                         <i class="fab fa-twitter fa-3x fa-pull-left fa-border"></i>
                     </div>
                 </div>
-                <div class="col-lg-3 col-md-6">
+                <div class="col-lg-3 col-md-6 border ml-5 py-3 background">
                     <div class="container">
                         <h4>News Letter</h4>
                         <p>It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
