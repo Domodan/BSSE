@@ -10,3 +10,7 @@
 .btn:hover {
 	color:#000!important;background-color:#ddffff!important;
 }
+
+hr.horizontal-rule {
+	border: 2px solid #f1f1f1;
+}
