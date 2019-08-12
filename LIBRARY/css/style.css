@@ -1,4 +1,9 @@
 
+body {
+	font-family: "Times New Roman";
+	font-size: 20px;
+}
+
 .border {
 	-webkit-box-shadow: 3px 2px 20px 32px rgba(235,230,235,1), 0px 3px 18px 14px rgba(166,159,159,0.93);
 	-moz-box-shadow: 3px 2px 20px 32px rgba(235,230,235,1), 0px 3px 18px 14px rgba(166,159,159,0.93);
@@ -12,5 +17,5 @@
 }
 
 hr.horizontal-rule {
-	border: 2px solid #f1f1f1;
+	border: 1px solid #000000;
 }
