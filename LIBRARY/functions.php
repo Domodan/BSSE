@@ -5,11 +5,23 @@
 	$connect = mysqli_connect('localhost', 'root', '', 'LIBRARY');
 
 	//Add Members to the Database
-	function register_members($fname, $lname, $username, $email, $telephone, $gender, $password) {
+	function add_member ($fname, $lname, $username, $email, $telephone, $gender, $password) {
 		global $connect;
 
 		$sql = sprintf("INSERT INTO Members(`First Name`, `Last Name`, `Username`, `Email`, `Telephone`, `Gender`, `Password`) VALUES('%s', '%s', '%s', '%s', '%s', '%s', '%s')",
 		$fname, $lname, $username, $email, $telephone, $gender, $password);
+
+		mysqli_query($connect, $sql);
+	}
+
+	//Add Collections to the Database
+	function add_collection ($type, $title, $author, $number, $edit_id) {
+		global $connect;
+		$sql = sprintf("INSERT INTO Collections(`Type`, `Title`, `Author`, `Number`) VALUES('%s', '%s', '%s', '%s')",
+		$type, $title, $author, $number);
+		if(isset($edit_id)) {
+			$sql = sprintf("UPDATE Collections SET `Type`='$type',`Title`='$title',`Author`='$author',`Number`='$number' WHERE `id`='$edit_id'");
+		}
 
 		mysqli_query($connect, $sql);
 	}

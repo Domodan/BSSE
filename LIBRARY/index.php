@@ -6,7 +6,7 @@
         $page = 'log-in';
     }
     elseif(empty($_GET['page'])) {
-        $page = 'signup';
+        $page = 'sign-up';
     }
     else {
         $page = $_GET['page'];
@@ -210,7 +210,7 @@
 
                                         if(login_successful($username, $password)){
                                             if(isset($_SESSION['is_Admin'])){
-                                                header('Location: index.php?page=daily');
+                                                header('Location: index.php?page=add-collections');
                                             }
                                             else {
                                                 header('Location:index.php?page=home');
@@ -281,17 +281,24 @@
                                         $confirm_password = clean_data($_POST['password2']);
                                         $gender = clean_data($_POST['gender']);
 
+                                        $sql = sprintf("SELECT * FROM Members WHERE Username = '$username' AND Password = '$password'");
+                                        $result = mysqli_query($connect, $sql);
+                                        $count = mysqli_num_rows($result);
+
                                         if($password != $confirm_password) {
                                             $error_message = "Error, Passwords do not match.";
                                         }
+                                        elseif ($count > 0) {
+                                            $error_message = "Error, User already exist.";
+                                        }
                                         else {
-                                            register_members($fname, $lname, $username, $email, $telephone, $gender, $password);
+                                            add_member($fname, $lname, $username, $email, $telephone, $gender, $password);
 
                                             $success_message = "New User registered successfully.";
                                         }
                                     }
                                 ?>
-                                <h1>Registration Form</h1>
+                                <h1 class="text-center">Registration Form</h1>
                                 <?php if(isset($error_message)): ?>
                                     <div class="alert alert-danger">
                                         <p><?php echo $error_message; ?></p>
@@ -304,31 +311,31 @@
                                 <form action="" method="POST" role="form">
                                     <div class="form-group">
                                         <label for="fname">First Name:</label>
-                                        <input type="text" class="form-control" name="fname">
+                                        <input type="text" class="form-control" name="fname" placeholder="First Name" value="<?=((isset($_POST['fname']))?$_POST['fname']:'');?>">
                                     </div>
                                     <div class="form-group">
                                         <label for="lname">Last Name:</label>
-                                        <input type="text" class="form-control" name="lname">
+                                        <input type="text" class="form-control" name="lname" p      laceholder="Last Name" value="<?=((isset($_POST['lname']))?$_POST['lname']:'');?>">
                                     </div>
                                     <div class="form-group">
                                         <label for="username">Username:</label>
-                                        <input type="text" class="form-control" name="username">
+                                        <input type="text" class="form-control" name="username" placeholder="Username" value="<?=((isset($_POST['username']))?$_POST['username']:'');?>">
                                     </div>
                                     <div class="form-group">
                                         <label for="email">Email:</label>
-                                        <input type="email" class="form-control" name="email">
+                                        <input type="email" class="form-control" name="email" placeholder="Email" value="<?=((isset($_POST['email']))?$_POST['email']:'');?>">
                                     </div>
                                     <div class="form-group">
                                         <label for="email">Telephone:</label>
-                                        <input type="tel" class="form-control" name="telephone">
+                                        <input type="tel" class="form-control" name="telephone" placeholder="Telephone" value="<?=((isset($_POST['telephone']))?$_POST['telephone']:'');?>">
                                     </div>
                                     <div class="form-group">
                                         <label for="password1">Password:</label>
-                                        <input type="password" class="form-control" name="password1">
+                                        <input type="password" class="form-control" name="password1" placeholder="Password">
                                     </div>
                                     <div class="form-group">
                                         <label for="password2">Confirm Password:</label>
-                                        <input type="password" class="form-control" name="password2">
+                                        <input type="password" class="form-control" name="password2" placeholder="Confirm Password">
                                     </div>
                                     <div class="form-group">
                                         <label for="gender">Gender:</label>
@@ -358,13 +365,148 @@
                         </div>
                     </div>
 
+                <?php elseif ($page == 'add-collections'): ?>
+                    <!-- Add Collections to the Database -->
+                    <div class="row my-5">
+                        <div class="col-lg-8 col-md-8 border ml-4 mr-3 p-3">
+                            <div class="collections">
+
+                                <?php
+                                    if($_SERVER['REQUEST_METHOD'] == 'POST') {
+                                        $type = clean_data($_POST['type']);
+                                        $title = clean_data($_POST['title']);
+                                        $author = clean_data($_POST['author']);
+                                        $number = clean_data($_POST['number']);
+                                        $item_type = '';
+
+                                        $sql = sprintf("SELECT * FROM Collections WHERE Title = '$title' AND Author = '$author'");
+                                        if(isset($_GET['edit'])) {
+                                            $edit_id = (int) $_GET['edit'];
+                                            $sql = sprintf("SELECT * FROM Collections WHERE Title = '$title' AND id != '$edit_id'");
+                                        }
+                                        $result = mysqli_query($connect, $sql);
+                                        $count = mysqli_num_rows($result);
+
+                                        if(empty($type && $title && $author && $number)) {
+                                            $error_message = "Invalid, all field is required.";
+                                        }
+                                        elseif ($count > 0) {
+                                            $error_message = "Item, ".$title." already exist, please add new item.";
+                                        }
+                                        else {
+                                            add_collection($type, $title, $author, $number, $edit_id);
+
+                                            $success_message = "Item, ".$title.", Added Successfully.";
+                                        }
+
+                                        if(isset($_GET['edit'])) {
+                                            $success_message = "Item, ".$title.", Editted Succesfully.";
+                                        }
+                                    }
+                                ?>
+
+                                <h1 class="text-center"><?=((isset($_GET['edit']))?'Edit':'Add');?> Item</h1>
+                                <?php if(isset($error_message)): ?>
+                                    <div class="alert alert-danger">
+                                        <p><?php echo $error_message; ?></p>
+                                    </div>
+                                <?php elseif(isset($success_message)): ?>
+                                    <div class="alert alert-success">
+                                        <p><?php echo $success_message; ?></p>
+                                    </div>
+                                <?php endif; ?>
+                                <form action="" method="POST" role="form">
+                                    <div class="form-group">
+                                        <?php
+                                            $item_type = '';
+                                            if(isset($_GET['edit'])) {
+                                            $edit_id = (int) $_GET['edit'];
+                                            $sql2 = sprintf("SELECT * FROM Collections WHERE id = '$edit_id'");
+                                            $edit_result = mysqli_query($connect, $sql2);
+                                            $edit_item = mysqli_fetch_array($edit_result);
+
+                                            $item_type = $edit_item['Type'];
+                                            }
+                                            else {
+                                                if(isset($_POST['type'])) {
+                                                    $item_type = $_POST['type'];
+                                                }
+                                            }
+                                        ?>
+                                        <label for="type">Type:</label>
+                                        <input type="text" class="form-control" name="type" placeholder="Book, Journal, Thesis etc." value="<?=$item_type;?>">
+                                    </div>
+                                    <div class="form-group">
+                                        <?php
+                                            $item_title = '';
+                                            if(isset($_GET['edit'])) {
+                                                $item_title = $edit_item['Title'];
+                                            }
+                                            else {
+                                                if(isset($_POST['title'])) {
+                                                    $item_title = $_POST['title'];
+                                                }
+                                            }
+                                        ?>
+                                        <label for="title">Title:</label>
+                                        <input type="text" class="form-control" name="title" placeholder="Enter Title" value="<?=$item_title;?>">
+                                    </div>
+                                    <div class="form-group">
+                                        <?php
+                                            $item_author = '';
+                                            if(isset($_GET['edit'])) {
+                                                $item_author = $edit_item['Author'];
+                                            }
+                                            else {
+                                                if(isset($_POST['author'])) {
+                                                    $item_author = $_POST['author'];
+                                                }
+                                            }
+                                        ?>
+                                        <label for="author">Author:</label>
+                                        <input type="text" class="form-control" name="author" placeholder="Enter Author's name" value="<?=$item_author;?>">
+                                    </div>
+                                    <div class="form-group">
+                                        <?php
+                                            $item_number = '';
+                                            if(isset($_GET['edit'])) {
+                                                $item_number = $edit_item['Number'];
+                                            }
+                                            else {
+                                                if(isset($_POST['number'])) {
+                                                    $item_number = $_POST['number'];
+                                                }
+                                            }
+                                        ?>
+                                        <label for="number">Number:</label>
+                                        <input type="text" class="form-control" name="number" placeholder="Enter Number" value="<?=$item_number;?>">
+                                    </div>
+                                    <input type="submit" class="btn btn-primary" value="<?=((isset($_GET['edit']))?'Edit':'Add');?> Item">
+                                    <?php if(isset($_GET['edit'])): ?>
+                                        <?php if ($item_type == 'Books'): ?>
+                                            <a href="index.php?page=books" class="btn btn-default ml-3">Cancel</a>
+                                        <?php elseif($item_type == 'Thesis'): ?>
+                                            <a href="index.php?page=thesis" class="btn btn-default ml-3">Cancel</a>
+                                        <?php elseif($item_type == 'Journal'): ?>
+                                            <a href="index.php?page=journals" class="btn btn-default ml-3">Cancel</a>
+                                        <?php elseif($item_type == 'Dissertation'): ?>
+                                            <a href="index.php?page=dissertations" class="btn btn-default ml-3">Cancel</a>
+                                        <?php else: ?>
+                                            <a href="index.php?page=home" class="btn btn-default ml-3">Cancel</a>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
                 <?php elseif ($page == 'reports'): ?>
 
                     <!-- General Report for the Library -->
                     <div class="row my-5">
                         <div class="col border ml-4 mr-5 py-2 px-4">
                             <div class="journals">
-                                <h2 class="text-center">General Reports</h2>
+                                <h1 class="text-center">General Reports</h1>
                                 <table class="table table-bordered table-striped table-hover">
                                     <thead>
                                         <tr>
@@ -414,29 +556,47 @@
                         <div class="col border ml-4 mr-5 py-2 px-4">
                             <div class="books">
 
-                                <h2 class="text-center">Available Books</h2>
+                                <?php
+                                    // Delete item from the Database
+                                    if (isset($_GET['delete']) && !empty($_GET['delete'])) {
+                                        $delete_id = (int) $_GET['delete'];
+                                        $sql = sprintf("DELETE FROM Collections WHERE id = '$delete_id'");
+                                        if(mysqli_query($connect, $sql)) {
+                                            header('Location: index.php?page=books');
+                                        }
+                                    }
+
+                                    $sql_book = sprintf("SELECT * FROM Collections WHERE Type = 'Book'");
+                                    $result = mysqli_query($connect, $sql_book);
+
+                                ?>
+
+                                <h1 class="text-center" style="font-family:'Times New Roman';">Available Books</h1>
                                 <table class="table table-bordered table-striped table-hover">
                                     <thead>
                                         <tr>
-                                            <th>Authors</th>
+                                            <th></th>
                                             <th>Title</th>
+                                            <th>Author</th>
                                             <th>Book Number</th>
                                             <th>Status</th>
+                                            <th></th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td>Domo</td>
-                                            <td>The Holy Spirit</td>
-                                            <td>#342453</td>
-                                            <td>Requested</td>
+                                            <a href="index.php?page=add-collections" class="btn btn-outline-success btn-lg mb-3" style="margin-left: 1100px;"><span class="display-5">Add Books</span></a>
                                         </tr>
-                                        <tr>
-                                            <td>Daniel</td>
-                                            <td>The Financial Confessions</td>
-                                            <td>#342903</td>
-                                            <td>Borrowed</td>
-                                        </tr>
+                                        <?php while($books = mysqli_fetch_array($result)): ?>
+                                            <tr>
+                                                <th><a href = "index.php?page=add-collections&edit=<?=$books['id'];?>" class="btn btn-outline-info"><span class="fas fa-pencil-alt"><span></a></th>
+                                                <td><?=$books['Title']?></td>
+                                                <td><?=$books['Author']?></td>
+                                                <td><?=$books['Number']?></td>
+                                                <td><?=$books['Status']?></td>
+                                                <th><a href = "index.php?page=books&delete=<?=$books['id'];?>" class="btn btn-outline-danger"><span class="fas fa-trash-alt"><span></a></th>
+                                            </tr>
+                                        <?php endwhile; ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -449,29 +609,47 @@
                     <div class="row my-5">
                         <div class="col border ml-4 mr-5 py-2 px-4">
                             <div class="dissertations">
-                                <h2 class="text-center">Available Dissertations</h2>
+                                <?php
+                                    // Delete item from the Database
+                                    if (isset($_GET['delete']) && !empty($_GET['delete'])) {
+                                        $delete_id = (int) $_GET['delete'];
+                                        $sql = sprintf("DELETE FROM Collections WHERE id = '$delete_id'");
+                                        if(mysqli_query($connect, $sql)) {
+                                            header('Location: index.php?page=dissertations');
+                                        }
+                                    }
+
+                                    $sql_dissertation = sprintf("SELECT * FROM Collections WHERE Type = 'Dissertation'");
+                                    $result = mysqli_query($connect, $sql_dissertation);
+
+                                ?>
+
+                                <h1 class="text-center" style="font-family:'Times New Roman';">Available Dissertations</h1>
                                 <table class="table table-bordered table-striped table-hover">
                                     <thead>
                                         <tr>
-                                            <th>Author</th>
+                                            <th></th>
                                             <th>Title</th>
-                                            <th>Book Number</th>
-                                            Status
+                                            <th>Author</th>
+                                            <th>Number</th>
+                                            <th>Status</th>
+                                            <th></th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td>Domo</td>
-                                            <td>The Holy Spirit</td>
-                                            <td>#342453</td>
-                                            <td>Available</td>
+                                            <a href="index.php?page=add-collections" class="btn btn-outline-success btn-lg mb-3" style="margin-left: 1100px;"><span class="display-5">Add Dissertations</span></a>
                                         </tr>
-                                        <tr>
-                                            <td>Daniel</td>
-                                            <td>The Financial Confessions</td>
-                                            <td>#342903</td>
-                                            <td>Requested</td>
-                                        </tr>
+                                        <?php while($dissertations = mysqli_fetch_array($result)): ?>
+                                            <tr>
+                                                <th><a href = "index.php?page=dissertations&edit=<?=$dissertations['id'];?>" class="btn btn-outline-info"><span class="fas fa-pencil-alt"><span></a></th>
+                                                <td><?=$dissertations['Title']?></td>
+                                                <td><?=$dissertations['Author']?></td>
+                                                <td><?=$dissertations['Number']?></td>
+                                                <td><?=$dissertations['Status']?></td>
+                                                <th><a href = "index.php?page=dissertations&delete=<?=$dissertations['id'];?>" class="btn btn-outline-danger"><span class="fas fa-trash-alt"><span></a></th>
+                                            </tr>
+                                        <?php endwhile; ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -484,29 +662,47 @@
                     <div class="row my-4">
                         <div class="col border ml-4 mr-5 py-2 px-4">
                             <div class="thesis">
-                                <h2 class="text-center">Available Thesis</h2>
+
+                                <?php
+                                    // Delete item from the Database
+                                    if (isset($_GET['delete']) && !empty($_GET['delete'])) {
+                                        $delete_id = (int) $_GET['delete'];
+                                        $sql = sprintf("DELETE FROM Collections WHERE id = '$delete_id'");
+                                        if(mysqli_query($connect, $sql)) {
+                                            header('Location: index.php?page=thesis');
+                                        }
+                                    }
+                                    $sql_thesis = sprintf("SELECT * FROM Collections WHERE Type = 'Thesis'");
+                                    $result = mysqli_query($connect, $sql_thesis);
+
+                                ?>
+
+                                <h1 class="text-center" style="font-family:'Times New Roman';">Available Thesis</h1>
                                 <table class="table table-bordered table-striped table-hover">
                                     <thead>
                                         <tr>
-                                            <th>Author</th>
+                                            <th></th>
                                             <th>Title</th>
-                                            <th>Book Number</th>
+                                            <th>Author</th>
+                                            <th>Thesis Number</th>
                                             <th>Status</th>
+                                            <th></th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td>Domo</td>
-                                            <td>The Holy Spirit</td>
-                                            <td>#342453</td>
-                                            <td>Borrowed</td>
+                                            <a href="index.php?page=add-collections" class="btn btn-outline-success btn-lg mb-3" style="margin-left: 1100px;"><span class="display-5">Add Thesis</span></a>
                                         </tr>
-                                        <tr>
-                                            <td>Daniel</td>
-                                            <td>The Financial Confessions</td>
-                                            <td>#342903</td>
-                                            <td>Available</td>
-                                        </tr>
+                                        <?php while($thesis = mysqli_fetch_array($result)): ?>
+                                            <tr>
+                                                <th><a href = "index.php?page=add-collections&edit=<?=$thesis['id'];?>" class="btn btn-outline-info"><span class="fas fa-pencil-alt"><span></a></th>
+                                                <td><?=$thesis['Title']?></td>
+                                                <td><?=$thesis['Author']?></td>
+                                                <td><?=$thesis['Number']?></td>
+                                                <td><?=$thesis['Status']?></td>
+                                                <th><a href = "index.php?page=thesis&delete=<?=$thesis['id'];?>" class="btn btn-outline-danger"><span class="fas fa-trash-alt"><span></a></th>
+                                            </tr>
+                                        <?php endwhile; ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -519,32 +715,47 @@
                     <div class="row my-5">
                         <div class="col border ml-4 mr-5 py-2 px-4">
                             <div class="journals">
-                                <h2 class="text-center">Available Journals</h2>
+
+                                <?php
+                                    // Delete item from the Database
+                                    if (isset($_GET['delete']) && !empty($_GET['delete'])) {
+                                        $delete_id = (int) $_GET['delete'];
+                                        $sql = sprintf("DELETE FROM Collections WHERE id = '$delete_id'");
+                                        if(mysqli_query($connect, $sql)) {
+                                            header('Location: index.php?page=journls');
+                                        }
+                                    }
+                                    $sql_journal = sprintf("SELECT * FROM Collections WHERE Type = 'Journal'");
+                                    $result = mysqli_query($connect, $sql_journal);
+
+                                ?>
+
+                                <h1 class="text-center" style="font-family:'Times New Roman';">Available Journals</h1>
                                 <table class="table table-bordered table-striped table-hover">
                                     <thead>
                                         <tr>
-                                            <th>Journal Title</th>
-                                            <th>Volume</th>
-                                            <th>Publisher</th>
-                                            <th>Topic</th>
+                                            <th></th>
+                                            <th>Title</th>
+                                            <th>Author</th>
+                                            <th>Volume Number</th>
                                             <th>Status</th>
+                                            <th></th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td>Domo</td>
-                                            <td>2</td>
-                                            <td>MK </td>
-                                            <td>The Holy Spirit</td>
-                                            <td>Borrowed</td>
+                                            <a href="index.php?page=add-collections" class="btn btn-outline-success btn-lg mb-3" style="margin-left: 1100px;"><span class="display-5">Add Journals</span></a>
                                         </tr>
-                                        <tr>
-                                            <td>Daniel</td>
-                                            <td>4</td>
-                                            <td>TM</td>
-                                            <td>The Financial Confessions</td>
-                                            <td>Available</td>
-                                        </tr>
+                                        <?php while($journals = mysqli_fetch_array($result)): ?>
+                                            <tr>
+                                                <th><a href = "index.php?page=add-collections&edit=<?=$journals['id'];?>" class="btn btn-outline-info"><span class="fas fa-pencil-alt"><span></a></th>
+                                                <td><?=$journals['Title']?></td>
+                                                <td><?=$journals['Author']?></td>
+                                                <td><?=$journals['Number']?></td>
+                                                <td><?=$journals['Status']?></td>
+                                                <th><a href = "index.php?page=journals&delete=<?=$journals['id'];?>" class="btn btn-outline-danger"><span class="fas fa-trash-alt"><span></a></th>
+                                            </tr>
+                                        <?php endwhile; ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -554,7 +765,7 @@
                 <?php elseif ($page == 'staff-info'): ?>
 
                     <!-- Our Staff Information Page -->
-                    <div class="row border ml-3 mb-4 mt-2 py-3 px-2">
+                    <div class="row border ml-3 my-4 py-3 px-2">
                         <!-- Staff List -->
                         <div class="col-md-6 mr-n3">
                             <div class="card">
@@ -562,13 +773,49 @@
                                     <span style="font-size: 1rem; color: Mediumslateblue;">
                                         <i class="fas fa-camera"></i>
                                         <i style="font-size: 2rem; font-family: 'Times New Roman'">
-                                            STAFF
+                                            Staff
                                         </i>
                                     </span>
                                 </div>
-                                <div class="card-body">
+                                <div class="card-body" style="margin:0px;">
                                     Horizontal rule down
                                     <hr class="horizontal-rule">
+                                    <div class="staff-list">
+                                        <table class="table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Name</th>
+                                                    <th>Job Title</th>
+                                                    <th>Employment Status</th>
+                                                    <th>Spoken Language</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>Janet</td>
+                                                    <td>Supervisor</td>
+                                                    <td>Full-time</td>
+                                                    <td>English</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Sharon</td>
+                                                    <td>Librarian</td>
+                                                    <td>Paid Work Experience</td>
+                                                    <td>English, French</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Lanyero</td>
+                                                    <td>IT Manager</td>
+                                                    <td>no-info</td>
+                                                    <td>no-info</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <hr class="horizontal-rule">
+                                    <div class="staff-number">
+                                        <h4>Staff Number: 3</h4>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -576,7 +823,7 @@
                         <div class="col-md-6 ml-n2 mr-4">
                             <div class="card">
                                 <div class="card-header bg-primary">
-                                    <h3 class="text-white">Staff Info</h3>
+                                    <h3 class="text-white"  style="font-family:'Times New Roman';">Staff Info</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="card-title">
@@ -590,6 +837,36 @@
                                         </div>
                                     </div>
                                     <hr class="horizontal-rule">
+                                    <div class="">
+                                        <ul style="list-style:none;">
+                                            <li>Phone:</li>
+                                            <li>Email:</li>
+                                        </ul>
+                                    </div>
+                                    <div class="card my-2">
+                                        <div class="card-header text-primary">
+                                            <h4>Address</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="card-title">
+                                                Main Address
+                                            </div>
+                                            57 <br>
+                                            Cousthood road <br>
+                                            Califonia
+                                        </div>
+                                    </div>
+                                    <div class="card">
+                                        <div class="card-header text-primary">
+                                            <h4>Staff Profile</h4>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="card-title">
+                                                Employee Number
+                                            </div>
+                                            STF0001
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -600,7 +877,11 @@
                     <!-- Daily Library Report Page -->
                     <div class="row">
                         <div class="col border mt-3 mb-5 mx-4 px-4 pb-4 pt-2">
-                            <h1>Daily Library Report</h1>
+                            <?php
+                                $sql = "SELECT * FROM Collections";
+                                $result = mysqli_query($connect, $sql);
+                            ?>
+                            <h1 class="text-center" style="font-family:'Times New Roman';">Daily Library Report</h1>
                             <div class="daily">
                                 <form class="my-3" action="" method="post">
                                     <div class="input-group">
@@ -613,31 +894,21 @@
                                 <table class="table table-bordered table-striped table-hover">
                                     <thead>
                                         <tr>
-                                            <th>Author</th>
                                             <th>Title</th>
+                                            <th>Author</th>
                                             <th>Status</th>
                                             <th>No. of Times Borrowed</th>
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <?php while($daily = mysqli_fetch_array($result)): ?>
                                         <tr>
-                                            <td>Domo</td>
-                                            <td>The Holy Spirit</td>
-                                            <td>Available</td>
+                                            <td><?=$daily['Title']?></td>
+                                            <td><?=$daily['Author']?></td>
+                                            <td><?=$daily['Status']?></td>
                                             <td>0</td>
                                         </tr>
-                                        <tr>
-                                            <td>Cyrus Mwase</td>
-                                            <td>The Financial Confessions</td>
-                                            <td>Borrowed</td>
-                                            <td>4</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Benny Hinn</td>
-                                            <td>Good Morning Holy Spirit</td>
-                                            <td>Requested</td>
-                                            <td>6</td>
-                                        </tr>
+                                        <?php endwhile; ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -649,7 +920,11 @@
                     <!-- Monthly Library Report Page -->
                     <div class="row monthly">
                         <div class="col border mt-3 mb-5 mx-4 px-4 pb-4 pt-2">
-                            <h1>Monthly Library Report</h1>
+                            <?php
+                                $sql = "SELECT * FROM Collections";
+                                $result = mysqli_query($connect, $sql);
+                            ?>
+                            <h1 class="text-center" style="font-family:'Times New Roman';">Monthly Library Report</h1>
                             <div class="daily">
                                 <form class="my-3" action="" method="post">
                                     <div class="input-group">
@@ -662,31 +937,21 @@
                                 <table class="table table-bordered table-striped table-hover">
                                     <thead>
                                         <tr>
-                                            <th>Author</th>
                                             <th>Title</th>
+                                            <th>Author</th>
                                             <th>Status</th>
                                             <th>No. of Times Borrowed</th>
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <?php while($monthly = mysqli_fetch_array($result)): ?>
                                         <tr>
-                                            <td>Domo</td>
-                                            <td>The Holy Spirit</td>
-                                            <td>Available</td>
-                                            <td>8</td>
+                                            <td><?=$monthly['Title']?></td>
+                                            <td><?=$monthly['Author']?></td>
+                                            <td><?=$monthly['Status']?></td>
+                                            <td>0</td>
                                         </tr>
-                                        <tr>
-                                            <td>Cyrus Mwase</td>
-                                            <td>The Financial Confessions</td>
-                                            <td>Borrowed</td>
-                                            <td>9</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Benny Hinn</td>
-                                            <td>Good Morning Holy Spirit</td>
-                                            <td>Requested</td>
-                                            <td>6</td>
-                                        </tr>
+                                        <?php endwhile; ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -698,7 +963,11 @@
                     <!-- Annual Library Report Page -->
                     <div class="row annual">
                         <div class="col border mt-3 mb-5 mx-4 px-4 pb-4 pt-2">
-                            <h1>Annual Library Report</h1>
+                            <?php
+                                $sql = "SELECT * FROM Collections";
+                                $result = mysqli_query($connect, $sql);
+                            ?>
+                            <h1 class="text-center" style="font-family:'Times New Roman';">Annual Library Report</h1>
                             <div class="daily">
                                 <form class="my-3" action="" method="post">
                                     <div class="input-group">
@@ -711,31 +980,21 @@
                                 <table class="table table-bordered table-striped table-hover">
                                     <thead>
                                         <tr>
-                                            <th>Author</th>
                                             <th>Title</th>
+                                            <th>Author</th>
                                             <th>Status</th>
                                             <th>No. of Times Borrowed</th>
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <?php while($annual = mysqli_fetch_array($result)): ?>
                                         <tr>
-                                            <td>Domo</td>
-                                            <td>The Holy Spirit</td>
-                                            <td>Available</td>
-                                            <td>3</td>
+                                            <td><?=$annual['Title']?></td>
+                                            <td><?=$annual['Author']?></td>
+                                            <td><?=$annual['Status']?></td>
+                                            <td>0</td>
                                         </tr>
-                                        <tr>
-                                            <td>Cyrus Mwase</td>
-                                            <td>The Financial Confessions</td>
-                                            <td>Borrowed</td>
-                                            <td>3</td>
-                                        </tr>
-                                        <tr>
-                                            <td>Benny Hinn</td>
-                                            <td>Good Morning Holy Spirit</td>
-                                            <td>Requested</td>
-                                            <td>6</td>
-                                        </tr>
+                                        <?php endwhile; ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -864,7 +1123,21 @@
                                         <div class="tab-pane fade" id="phone" role="tabpanel" aria-labelledby="phone-tab">
                                             <div class="row">
                                                 <div class="col">
-                                                    <form class="" action="index.html" method="post">
+                                                    <?php
+                                                        if($_SERVER['REQUEST_METHOD'] == 'POST') {
+                                                            $basic  = new \Nexmo\Client\Credentials\Basic('0b5ea899', 'vMfq6tWJuOTWJ4Vh');
+
+                                                            $client = new \Nexmo\Client($basic);
+
+                                                            $message = $client->message()->send([
+                                                                'to' => $_POST['phone'],
+                                                                'from' => 'Library',
+                                                                'text' => $_POST['question']
+                                                            ]);
+                                                        }
+                                                    ?>
+
+                                                    <form class="" action="" method="post">
                                                         <h1>Contact Us</h1>
                                                         <div class="form-group">
                                                             <label for="question">Message</label>
@@ -872,7 +1145,7 @@
                                                         </div>
                                                         <div class="form-group">
                                                             <label for="name">Phone Number</label>
-                                                            <input type="tel" class="form-control" name="phone">
+                                                            <input type="tel" class="form-control" name="phone" placeholder="Eg. 256789175126">
                                                         </div>
                                                         <input type="submit" class="btn btn-primary" value="Send">
                                                     </form>
