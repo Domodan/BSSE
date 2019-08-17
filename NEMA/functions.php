@@ -2,7 +2,7 @@
 	ob_start();
 	session_start();
 
-	$connect = mysqli_connect('localhost', 'root', '', 'LIBRARY');
+	$connect = mysqli_connect('localhost', 'root', '', 'NEMA');
 
 	//Add Members to the Database
 	function add_member ($fname, $lname, $username, $email, $telephone, $gender, $password) {
@@ -15,15 +15,17 @@
 	}
 
 	//Add Collections to the Database
-	function add_collection ($type, $title, $author, $number, $edit_id) {
+	function add_collection ($author, $title, $type, $file_type, $file_name, $description) {
 		global $connect;
-		$sql = sprintf("INSERT INTO Collections(`Type`, `Title`, `Author`, `Number`) VALUES('%s', '%s', '%s', '%s')",
-		$type, $title, $author, $number);
-		if(isset($edit_id)) {
-			$sql = sprintf("UPDATE Collections SET `Type`='$type',`Title`='$title',`Author`='$author',`Number`='$number' WHERE `id`='$edit_id'");
-		}
+		$sql = sprintf("INSERT INTO Collections(`Author`, `Title`, `Type`, `File_Type`, `File_Name`, `Description`) VALUES('%s', '%s', '%s', '%s', '%s', '%s')",
+		$author, $title, $type, $file_type, $file_name, $description);
+		// if(isset($edit_id)) {
+		// 	$sql = sprintf("UPDATE Collections SET `Type`='$type',`Title`='$title',`Author`='$author',`Number`='$number' WHERE `id`='$edit_id'");
+		// }
 
 		mysqli_query($connect, $sql);
+
+		return true;
 	}
 
 	//Clean User Input before putting into the Database
@@ -48,8 +50,8 @@
 		else {
 			$row = mysqli_fetch_array($result);
 
-			if($row['is_Admin'] == TRUE) {
-				$_SESSION['is_Admin'] = TRUE;
+			if($row['is_admin'] == TRUE) {
+				$_SESSION['is_admin'] = TRUE;
 			}
 			$_SESSION['member_id'] = $row['id'];
 

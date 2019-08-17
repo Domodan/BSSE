@@ -492,7 +492,7 @@
                                         <?php elseif($item_type == 'Dissertation'): ?>
                                             <a href="index.php?page=dissertations" class="btn btn-default ml-3">Cancel</a>
                                         <?php else: ?>
-                                            <a href="index.php?page=home" class="btn btn-default ml-3">Cancel</a>
+                                            <a href="index.php?page=books" class="btn btn-default ml-3">Cancel</a>
                                         <?php endif; ?>
                                     <?php endif; ?>
                                 </form>

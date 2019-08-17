@@ -44,3 +44,7 @@ span.what {
 	background-color: #f4f4f4;
 	width: 50%;
 }
+
+address {
+	display: block;
+}
