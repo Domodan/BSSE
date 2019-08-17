@@ -41,17 +41,19 @@
 	function login_successful($username, $password){
 		global $connect;
 
-		$sql = sprintf("SELECT id, is_Admin FROM Members WHERE Username = '%s' AND Password = '%s'", $username, $password);
+		$sql = sprintf("SELECT id, is_admin FROM Members WHERE Username = '%s' AND Password = '%s'", $username, $password);
 
 		$result = mysqli_query($connect, $sql);
+
 		if(mysqli_num_rows($result) == 0){
+
 			return false;
 		}
 		else {
 			$row = mysqli_fetch_array($result);
 
-			if($row['is_admin'] == TRUE) {
-				$_SESSION['is_admin'] = TRUE;
+			if($row['is_admin']) {
+				$_SESSION['is_Admin'] = TRUE;
 			}
 			$_SESSION['member_id'] = $row['id'];
 
