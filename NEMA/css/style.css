@@ -19,7 +19,7 @@ div[style="background: url(/images/nema.png) no-repeat center;"] {
 	font-size: 20px;
 }
 
-.navbar .navbar-nav a:hover, .navbar .navbar-nav a:focus{
+.navbar .navbar-nav a:hover, .navbar .navbar-nav a:focus {
 	background-color:#006400;
 	color:#ffffff;
 	border-radius: 5px;

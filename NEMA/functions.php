@@ -15,17 +15,37 @@
 	}
 
 	//Add Collections to the Database
-	function add_collection ($author, $title, $type, $file_type, $file_name, $description) {
+	function add_collection ($author, $title, $type, $file_name, $description, $edit_id) {
 		global $connect;
-		$sql = sprintf("INSERT INTO Collections(`Author`, `Title`, `Type`, `File_Type`, `File_Name`, `Description`) VALUES('%s', '%s', '%s', '%s', '%s', '%s')",
-		$author, $title, $type, $file_type, $file_name, $description);
-		// if(isset($edit_id)) {
-		// 	$sql = sprintf("UPDATE Collections SET `Type`='$type',`Title`='$title',`Author`='$author',`Number`='$number' WHERE `id`='$edit_id'");
-		// }
 
-		mysqli_query($connect, $sql);
+		$sql = sprintf("INSERT INTO Collections(`Author`, `Title`, `Type`, `File_Name`, `Description`) VALUES('%s', '%s', '%s', '%s', '%s')",
+		$author, $title, $type, $file_name, $description);
 
-		return true;
+		if(isset($edit_id) && $edit_id > 0) {
+			$sql = sprintf("UPDATE `Collections` SET `Author`='$author', `Title`='$title', `Type`='$type', `File_Name`='$file_name', `Description`='$description' WHERE `id`='$edit_id'");
+		}
+
+		if(mysqli_query($connect, $sql)) {
+			return true;
+		}else {
+			return false;
+		}
+	}
+
+	// Submit and Store the Question in the Database
+	function submit_question($question, $user_id) {
+		global $connect;
+
+		$sql = sprintf("INSERT INTO Messages (`Question`, `User_id`) VALUES ('%s', '%d')", $question, $user_id);
+		var_dump(isset($_SESSION['is_Admin']));
+
+		if(isset($_SESSION['is_Admin'])) {
+			$sql = sprintf("INSERT INTO Messages (`Question`, `User_id`, `Status`) VALUES ('%s', '%d', 'Answered')", $question, $user_id);
+		}
+
+		if(mysqli_query($connect, $sql)) {
+			return true;
+		}
 	}
 
 	//Clean User Input before putting into the Database
@@ -52,7 +72,7 @@
 		else {
 			$row = mysqli_fetch_array($result);
 
-			if($row['is_admin']) {
+			if($row['is_admin'] == TRUE) {
 				$_SESSION['is_Admin'] = TRUE;
 			}
 			$_SESSION['member_id'] = $row['id'];

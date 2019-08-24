@@ -3,16 +3,25 @@
     require_once 'functions.php';
 
     if (empty($_SESSION['member_id'])) {
-        $page = 'log-in';
+        if((empty($_SESSION['member_id'])) && isset($_GET['page'])) {
+            if($_GET['page'] == 'sign-up') {
+                $page = 'sign-up';
+            }
+            else {
+                $page = 'log-in';
+            }
+        }
+        else {
+            $page = 'log-in';
+        }
     }
     elseif(empty($_GET['page'])) {
-        $page = 'sign-up';
+        $page = 'log-in';
     }
     else {
         $page = $_GET['page'];
     }
 ?>
-
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
     <head>
@@ -107,8 +116,78 @@
                     <li class="nav-item">
                         <a class="nav-link" href="index.php?page=about-us">About Us</a>
                     </li>
+                    <?php if(isset($_SESSION['is_Admin'])): ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.php?page=sign-up">Add User</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.php?page=remove-user">Remove User</a>
+                    </li>
+                    <?php else: ?>
+                    <?php endif; ?>
                 </ul>
             </div>
+            <?php if($page == 'user-guide'): ?>
+                <?php
+                    if(isset($_SESSION['is_Admin'])) {
+                        $sql = sprintf("SELECT * FROM Messages WHERE Status = 'Pending'");
+                    }
+                    else {
+                        $sql = sprintf("SELECT * FROM Messages WHERE Status = 'Answered'");
+                    }
+                    $result = mysqli_query($connect, $sql);
+                    $count = mysqli_num_rows($result);
+
+                    $user_id = (int) $_SESSION['member_id'];
+
+                ?>
+                <div class="dropleft" style="margin-right:100px;">
+                    <button class="btn btn-primary btn-lg" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Messages <span class="badge badge-light"><?=$count?></span>
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <?php if(isset($_SESSION['is_Admin']) && $count > 0):?>
+                            <?php while($message = mysqli_fetch_array($result)): ?>
+                                <div>
+                                    <a href="index.php?page=user-guide&reply=<?=$message['id']?>" data-toggle="modal" data-target="#exampleModalCenter"
+                                    class="dropdown-item alert alert-success">
+                                    <p class="font-italic"><?=$message['Date']?></p>
+                                    <p><?=$message['Question']?></p>
+                                    </a>
+                                    <div class="dropdown-divider"></div>
+                                </div>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <?php if(isset($_SESSION['is_Admin']) && $count <= 0): ?>
+                                <div class="alert alert-danger">
+                                    <h4>No Question to reply to, Thanks.</h4>
+                                </div>
+                            <?php endif;?>
+                        <?php endif; ?>
+                        <?php if(isset($_SESSION['member_id']) && empty($_SESSION['is_Admin'])): ?>
+                            <?php if($count > 0):?>
+                                <?php while($message = mysqli_fetch_array($result)): ?>
+                                    <?php if($message['User_id'] == $user_id): ?>
+                                        <div>
+                                            <a href="index.php?page=user-guide&reply=<?=$message['id']?>" class="dropdown-item alert alert-success">
+                                            <p class="font-italic"><?=$message['Date']?></p>
+                                            <p><?=$message['Question']?></p>
+                                            </a>
+                                            <div class="dropdown-divider"></div>
+                                        </div>
+                                    <?php endif; ?>
+                                <?php endwhile; ?>
+                            <?php else: ?>
+                                <?php if(empty($_SESSION['is_Admin']) && ($message['User_id'] == $user_id) && $count <= 0): ?>
+                                    <div class="alert alert-danger">
+                                        <h4>No reply yet from the Librarian. Please wait a little while.</h4>
+                                    </div>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
         </nav>
         <div class="container-fluid mb-2">
             <div class="row">
@@ -353,7 +432,7 @@
                        exit;
                    ?>
 
-                <?php elseif($page == 'sign-up'): ?>
+               <?php elseif(($page == 'sign-up') && (isset($_SESSION['member_id']) || isset($_SESSION['is_Admin']) || empty($_SESSION['member_id']) || empty($_SESSION['is_Admin']))): ?>
                     <!-- Registration Form  Page-->
                     <div class="row">
                         <div class="col-md-6 p-3">
@@ -445,6 +524,61 @@
                         </div>
                     </div><!-- Registration Form Ends Here -->
 
+                <?php elseif($page == 'remove-user'): ?>
+                    <!-- Remove User -->
+                    <div class="row my-5 mx-2">
+                        <div class="col border shadow p-3">
+                            <?php
+                                // Delete User from the Database
+                                if (isset($_GET['delete']) && !empty($_GET['delete'])) {
+                                    $delete_id = (int) $_GET['delete'];
+                                    $sql = sprintf("DELETE FROM Members WHERE id = '$delete_id'");
+                                    if(mysqli_query($connect, $sql)) {
+                                        header('Location: index.php?page=remove-user');
+                                    }
+                                }
+
+                                // Get all the Users From the Database
+                                $sql = sprintf("SELECT * FROM Members WHERE is_admin = FALSE");
+                                $result = mysqli_query($connect, $sql);
+                                $count = 1;
+                            ?>
+                            <table class="table table-bordered table-striped table-light" style="font-size:20px">
+                                <h1 class="text-center mb-3 font-weight-bold font-italic" style="font-family:'Times New Roman';">Available Library Users</h1>
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th># ssn</th>
+                                        <th colspan="2">Name</th>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Gender</th>
+                                        <th>Telephone</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php while($query_result = mysqli_fetch_array($result)): ?>
+                                        <tr>
+                                            <td><?=$count?></td>
+                                            <td><?=$query_result['Last Name']?></td>
+                                            <td><?=$query_result['First Name']?></td>
+                                            <td><?=$query_result['Username']?></td>
+                                            <td><?=$query_result['Email']?></td>
+                                            <td><?=$query_result['Gender']?></td>
+                                            <td><?=$query_result['Telephone']?></td>
+                                            <td>
+                                                <a href="index.php?page=remove-user&delete=<?=$query_result['id']?>" style="font-size:25px;color:Tomato;">
+                                                    <span class="fas fa-trash-alt"></span>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        <?php $count++; ?>
+                                    <?php endwhile; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div><!-- End of remove user page -->
+
                 <?php elseif($page == 'add-materials'): ?>
                     <!-- Uploading a new Item -->
                     <div class="row my-5">
@@ -454,30 +588,43 @@
                                     $author = clean_data($_POST['author']);
                                     $title = clean_data($_POST['title']);
                                     $type = clean_data($_POST['type']);
+                                    var_dump($type);
                                     $description = clean_data($_POST['description']);
 
                                     $file_name = $_FILES['file']['name'];
-                                    $file_type = $_FILES['file']['type'];
                                     $temp_name = $_FILES['file']['tmp_name'];
 
                                     $folder = "web/".$file_name;
+                                    $edit_id = 0;
 
                                     $sql = sprintf("SELECT * FROM Collections WHERE Author = '$author' AND Title = '$title' AND Type = '$type'");
+
+                                    if(isset($_GET['edit'])) {
+                                        $edit_id = (int) $_GET['edit'];
+                                        $sql = sprintf("SELECT * FROM Collections WHERE Title = '$title' AND id != '$edit_id'");
+                                    }
                                     $result = mysqli_query($connect, $sql);
 
                                     if(mysqli_num_rows($result) > 0) {
                                         $error_message = "Error, <br>   File/Material already exist. Please try again.";
                                     }else {
-                                        if (move_uploaded_file($temp_name, $folder)) {
-                                            add_collection ($author, $title, $type, $file_type, $file_name, $description);
-                                            $success_message = "Success, <br> Files/Materials uploaded Successfully.";
+
+                                        if(file_exists($folder) && isset($_GET['edit'])) {
+                                            add_collection ($author, $title, $type, $file_name, $description, $edit_id);
+
+                                            $success_message = "Success, <br> Files/Materials editted Successfully.";
+                                        }
+                                        elseif (move_uploaded_file($temp_name, $folder)) {
+                                            if (add_collection ($author, $title, $type, $file_name, $description, $edit_id)) {
+                                                $success_message = "Success, <br> Files/Materials uploaded Successfully.";
+                                            }
                                         }else {
                                             $error_message = "Error, <br> File upload failed, please try again.";
                                         }
                                     }
                                 }
                             ?>
-                            <h1 class="text-center">Add Materials</h1>
+                            <h1 class="text-center"><?=((isset($_GET['edit']))?'Edit':'Add');?> Materials</h1>
                             <?php if(isset($success_message)): ?>
                                 <div class="alert alert-success">
                                     <?= $success_message; ?>
@@ -488,42 +635,133 @@
                                 </div>
                             <?php endif; ?>
                             <form class="" action="" method="POST" enctype="multipart/form-data">
+                                <?php
+                                    $edit_author = '';
+                                    if(isset($_GET['edit'])) {
+                                        $edit_id = (int) $_GET['edit'];
+                                        $sql2 = sprintf("SELECT * FROM Collections WHERE id = '$edit_id'");
+                                        $edit_result = mysqli_query($connect, $sql2);
+                                        $edit_item = mysqli_fetch_array($edit_result);
+
+                                        $edit_author = $edit_item['Author'];
+                                    }else {
+                                        if(isset($_POST['Author'])) {
+                                            $edit_author = $_POST['author'];
+                                        }
+                                    }
+                                ?>
                                 <div class="form-group">
                                     <label for="author">Author</label>
-                                    <input type="text" class="form-control" name="author" value="" required>
+                                    <input type="text" class="form-control" name="author" value="<?=$edit_author?>" required>
                                 </div>
                                 <div class="form-group">
+                                    <?php
+                                        $edit_title = '';
+                                        if(isset($_GET['edit'])) {
+                                            $edit_title = $edit_item['Title'];
+                                        }
+                                        else {
+                                            if(isset($_POST['title'])) {
+                                                $edit_title = $_POST['title'];
+                                            }
+                                        }
+                                    ?>
                                     <label for="title">Title</label>
-                                    <input type="text" class="form-control" name="title" value="" required>
+                                    <input type="text" class="form-control" name="title" value="<?=$edit_title?>" required>
                                 </div>
                                 <div class="form-group">
+                                    <?php
+                                        $edit_type = '';
+                                        if(isset($_GET['edit'])) {
+                                            $edit_type = $edit_item['Type'];
+                                        }
+                                        elseif(isset($_POST['type'])) {
+                                            $edit_type = $_POST['type'];
+                                        }
+                                    ?>
                                     <label for="title">Type</label>
-                                    <select class="custom-select" name="materials" required>
+                                    <select class="custom-select" name="type" required>
+                                        <?php if(isset($_GET['edit'])): ?>
+                                        <option selected><?=$edit_type?></option>
+                                        <?php elseif(isset($_POST['type'])): ?>
+                                        <option selected><?=$edit_type?></option>
+                                        <?php else: ?>
                                         <option selected>Book</option>
-                                        <option value="">Book</option>
-                                        <option value="">Report</option>
-                                        <option value="">Year-Book</option>
-                                        <option value="">Encylopedia</option>
-                                        <option value="">Journal</option>
-                                        <option value="">Dictionary</option>
-                                        <option value="">Brochure</option>
-                                        <option value="">Periodical</option>
+                                        <option value="Report">Report</option>
+                                        <option value="Year-Book">Year-Book</option>
+                                        <option value="Encyclopedia">Encylopedia</option>
+                                        <option value="Journal">Journal</option>
+                                        <option value="Dictionary">Dictionary</option>
+                                        <option value="Brochure">Brochure</option>
+                                        <option value="Periodical">Periodical</option>
+                                        <?php endif; ?>
                                     </select>
                                 </div>
                                 <div class="form-group">
+                                    <?php
+                                        $edit_description = '';
+                                        if(isset($_GET['edit'])) {
+                                            $edit_description = $edit_item['Description'];
+                                        }
+                                        else {
+                                            if(isset($_POST['description'])) {
+                                                $edit_description = $_POST['description'];
+                                            }
+                                        }
+                                    ?>
                                     <label for="description">Description</label>
-                                    <textarea class="form-control" name="description" rows="8" cols="80"></textarea>
+                                    <textarea class="form-control" name="description" rows="8" cols="80" value=""><?=$edit_description?></textarea>
                                 </div>
                                 <div class="input-group mb-3">
                                     <div class="input-group-prepend">
                                         <span class="input-group-text" id="inputGroupFileAddon01">Upload</span>
                                     </div>
                                     <div class="custom-file">
+                                        <?php
+                                            $edit_file = '';
+                                            if(isset($_GET['edit'])) {
+                                                $edit_file = $edit_item['File_Name'];
+                                            }
+                                            else {
+                                                if(isset($_POST['file'])) {
+                                                    $edit_file = $_POST['file'];
+                                                }
+                                            }
+                                        ?>
                                         <input type="file" class="custom-file-input" id="inputGroupFile01" aria-describedby="inputGroupFileAddon01" name="file">
-                                        <label class="custom-file-label" for="inputGroupFile01">Choose file to Upload</label>
+                                        <label class="custom-file-label" for="inputGroupFile01">
+                                            <?php
+                                                if(isset($_GET['edit'])) {
+                                                    echo $edit_file;
+                                                }else {
+                                                    echo "Choose file to Upload";
+                                                }
+                                            ?>
+                                        </label>
                                     </div>
                                 </div>
-                                <input type="submit" class="btn btn-outline-success mt-2" value="Upload">
+                                <input type="submit" class="btn btn-outline-success mt-2" value="<?=((isset($_GET['edit']))?'Upload Edit':'Upload')?>">
+                                <?php if(isset($_GET['edit'])): ?>
+                                    <?php if ($edit_type == 'Book'): ?>
+                                        <a href="index.php?page=books" class="btn btn-outline-secondary ml-3 m mt-1">Cancel</a>
+                                    <?php elseif($edit_type == 'Report'): ?>
+                                        <a href="index.php?page=report" class="btn btn-outline-secondary ml-3 m mt-1">Cancel</a>
+                                    <?php elseif($edit_type == 'Year-Book'): ?>
+                                        <a href="index.php?page=year-book" class="btn btn-outline-secondary ml-3 m mt-1">Cancel</a>
+                                    <?php elseif($edit_type == 'Dictionary'): ?>
+                                        <a href="index.php?page=dictionary" class="btn btn-outline-secondary ml-3 m mt-1">Cancel</a>
+                                    <?php elseif($edit_type == 'Encyclopedia'): ?>
+                                        <a href="index.php?page=encyclopedia" class="btn btn-outline-secondary ml-3 m mt-1">Cancel</a>
+                                    <?php elseif($edit_type == 'Journal'): ?>
+                                        <a href="index.php?page=journals" class="btn btn-outline-secondary ml-3 m mt-1">Cancel</a>
+                                    <?php elseif($edit_type == 'Brochure'): ?>
+                                        <a href="index.php?page=brochures" class="btn btn-outline-secondary ml-3 m mt-1">Cancel</a>
+                                    <?php elseif($edit_type == 'Periodical'): ?>
+                                        <a href="index.php?page=periodicals" class="btn btn-outline-secondary ml-3 m mt-1">Cancel</a>
+                                    <?php else: ?>
+                                        <a href="index.php?page=books" class="btn btn-outline-secondary ml-3 m mt-1">Cancel</a>
+                                    <?php endif; ?>
+                                <?php endif; ?>
                             </form>
                         </div>
                     </div><!-- Upload a new File -->
@@ -533,12 +771,22 @@
                     <div class="row my-5">
                         <div class="col border py-2 px-4">
                             <?php
+                                // Delete item from the Database
+                                if (isset($_GET['delete']) && !empty($_GET['delete'])) {
+                                    $delete_id = (int) $_GET['delete'];
+                                    $sql = sprintf("DELETE FROM Collections WHERE id = '$delete_id'");
+
+                                    if(mysqli_query($connect, $sql)) {
+                                        header('Location: index.php?page=books');
+                                    }
+                                }
+
                                 $sql = sprintf("SELECT * FROM Collections WHERE Type = 'Book'");
                                 $result = mysqli_query($connect, $sql);
                                 $count = 1;
                             ?>
                             <h1 class="text-center">Books Available</h1>
-                            <table class="table table-bordered table-striped table-hover">
+                            <table class="table table-bordered table-striped table-hover" style="font-size:20px">
                                 <?php if(isset($_SESSION['is_Admin'])): ?>
                                     <div class="col-md my-2">
                                         <a href="index.php?page=add-materials" class="btn btn-outline-warning" style="margin-bottom: 5px;"><i style="font-size:18px;">Add <?= (($_GET['page'] == 'books')?'Books':''); ?></i></a>
@@ -547,6 +795,9 @@
                                 <thead>
                                     <tr>
                                         <th># ssn</th>
+                                        <?php if(isset($_SESSION['is_Admin'])): ?>
+                                        <th colspan="2"></th>
+                                        <?php endif; ?>
                                         <th>Author</th>
                                         <th>Title</th>
                                         <th>Description</th>
@@ -558,6 +809,18 @@
                                 <?php while($books = mysqli_fetch_array($result)): ?>
                                    <tr>
                                        <td><?=$count?></td>
+                                       <?php if(isset($_SESSION['is_Admin'])): ?>
+                                           <td>
+                                               <a href="index.php?page=add-materials&edit=<?=$books['id']?>" style="font-size:25px;color:Mediumslateblue;">
+                                                   <span class="fas fa-pencil-alt"></span>Edit
+                                               </a>
+                                           </td>
+                                           <td>
+                                               <a href="index.php?page=books&delete=<?=$books['id']?>" style="font-size:25px;color:Tomato;">
+                                                   <span class="fas fa-trash-alt"></span>Delete
+                                               </a>
+                                           </td>
+                                        <?php endif; ?>
                                        <td><?=$books['Author']?></td>
                                        <td><?=$books['Title']?></td>
                                        <td><?=$books['Description']?></td>
@@ -585,7 +848,17 @@
                     <div class="row my-5">
                         <div class="col border py-2 px-4">
                             <?php
-                                $sql = sprintf("SELECT * FROM Collections WHERE Type = 'Journals'");
+                                // Delete item from the Database
+                                if (isset($_GET['delete']) && !empty($_GET['delete'])) {
+                                    $delete_id = (int) $_GET['delete'];
+                                    $sql = sprintf("DELETE FROM Collections WHERE id = '$delete_id'");
+
+                                    if(mysqli_query($connect, $sql)) {
+                                        header('Location: index.php?page=journals');
+                                    }
+                                }
+
+                                $sql = sprintf("SELECT * FROM Collections WHERE Type = 'Journal'");
                                 $result = mysqli_query($connect, $sql);
                                 $count = 1;
                             ?>
@@ -599,6 +872,9 @@
                                 <thead>
                                     <tr>
                                         <th># ssn</th>
+                                        <?php if(isset($_SESSION['is_Admin'])): ?>
+                                            <th colspan="2"></th>
+                                        <?php endif; ?>
                                         <th>Author</th>
                                         <th>Title</th>
                                         <th>Description</th>
@@ -610,6 +886,18 @@
                                 <?php while($journals = mysqli_fetch_array($result)): ?>
                                    <tr>
                                        <td><?=$count?></td>
+                                       <?php if(isset($_SESSION['is_Admin'])): ?>
+                                       <td>
+                                           <a href="index.php?page=add-materials&edit=<?=$journals['id']?>" style="font-size:25px;color:Mediumslateblue;">
+                                               <span class="fas fa-pencil-alt"></span>Edit
+                                           </a>
+                                       </td>
+                                       <td>
+                                           <a href="index.php?page=journals&delete=<?=$journals['id']?>" style="font-size:25px;color:Tomato;">
+                                               <span class="fas fa-trash-alt"></span>Delete
+                                           </a>
+                                       </td>
+                                        <?php endif; ?>
                                        <td><?=$journals['Author']?></td>
                                        <td><?=$journals['Title']?></td>
                                        <td><?=$journals['Description']?></td>
@@ -637,7 +925,17 @@
                     <div class="row my-5">
                         <div class="col border py-2 px-4">
                             <?php
-                                $sql = sprintf("SELECT * FROM Collections WHERE Type = 'Reports'");
+                                // Delete item from the Database
+                                if (isset($_GET['delete']) && !empty($_GET['delete'])) {
+                                    $delete_id = (int) $_GET['delete'];
+                                    $sql = sprintf("DELETE FROM Collections WHERE id = '$delete_id'");
+
+                                    if(mysqli_query($connect, $sql)) {
+                                        header('Location: index.php?page=reports');
+                                    }
+                                }
+
+                                $sql = sprintf("SELECT * FROM Collections WHERE Type = 'Report'");
                                 $result = mysqli_query($connect, $sql);
                                 $count = 1;
                             ?>
@@ -651,6 +949,9 @@
                                 <thead>
                                     <tr>
                                         <th># ssn</th>
+                                        <?php if(isset($_SESSION['is_Admin'])): ?>
+                                            <th colspan="2"></th>
+                                        <?php endif; ?>
                                         <th>Author</th>
                                         <th>Title</th>
                                         <th>Description</th>
@@ -662,6 +963,18 @@
                                 <?php while($reports = mysqli_fetch_array($result)): ?>
                                    <tr>
                                        <td><?=$count?></td>
+                                       <?php if(isset($_SESSION['is_Admin'])): ?>
+                                       <td>
+                                           <a href="index.php?page=add-materials&edit=<?=$reports['id']?>" style="font-size:25px;color:Mediumslateblue;">
+                                               <span class="fas fa-pencil-alt"></span>Edit
+                                           </a>
+                                       </td>
+                                       <td>
+                                           <a href="index.php?page=reports&delete=<?=$reports['id']?>" style="font-size:25px;color:Tomato;">
+                                               <span class="fas fa-trash-alt"></span>Delete
+                                           </a>
+                                       </td>
+                                        <?php endif; ?>
                                        <td><?=$reports['Author']?></td>
                                        <td><?=$reports['Title']?></td>
                                        <td><?=$reports['Description']?></td>
@@ -689,7 +1002,17 @@
                     <div class="row my-5">
                         <div class="col border py-2 px-4">
                             <?php
-                                $sql = sprintf("SELECT * FROM Collections WHERE Type = 'Periodicals'");
+                                // Delete item from the Database
+                                if (isset($_GET['delete']) && !empty($_GET['delete'])) {
+                                    $delete_id = (int) $_GET['delete'];
+                                    $sql = sprintf("DELETE FROM Collections WHERE id = '$delete_id'");
+
+                                    if(mysqli_query($connect, $sql)) {
+                                        header('Location: index.php?page=periodicals');
+                                    }
+                                }
+
+                                $sql = sprintf("SELECT * FROM Collections WHERE Type = 'Periodical'");
                                 $result = mysqli_query($connect, $sql);
                                 $count = 1;
                             ?>
@@ -703,6 +1026,9 @@
                                 <thead>
                                     <tr>
                                         <th># ssn</th>
+                                        <?php if(isset($_SESSION['is_Admin'])): ?>
+                                            <th colspan="2"></th>
+                                        <?php endif; ?>
                                         <th>Author</th>
                                         <th>Title</th>
                                         <th>Description</th>
@@ -714,6 +1040,18 @@
                                 <?php while($periodicals = mysqli_fetch_array($result)): ?>
                                    <tr>
                                        <td><?=$count?></td>
+                                       <?php if(isset($_SESSION['is_Admin'])): ?>
+                                       <td>
+                                           <a href="index.php?page=add-materials&edit=<?=$periodicals['id']?>" style="font-size:25px;color:Mediumslateblue;">
+                                               <span class="fas fa-pencil-alt"></span>Edit
+                                           </a>
+                                       </td>
+                                       <td>
+                                           <a href="index.php?page=periodicals&delete=<?=$periodicals['id']?>" style="font-size:25px;color:Tomato;">
+                                               <span class="fas fa-trash-alt"></span>Delete
+                                           </a>
+                                       </td>
+                                        <?php endif; ?>
                                        <td><?=$periodicals['Author']?></td>
                                        <td><?=$periodicals['Title']?></td>
                                        <td><?=$periodicals['Description']?></td>
@@ -746,6 +1084,16 @@
                                 </div>
                                 <div class="card-body">
                                     <?php
+                                        // Delete item from the Database
+                                        if (isset($_GET['delete']) && !empty($_GET['delete'])) {
+                                            $delete_id = (int) $_GET['delete'];
+                                            $sql = sprintf("DELETE FROM Collections WHERE id = '$delete_id'");
+
+                                            if(mysqli_query($connect, $sql)) {
+                                                header('Location: index.php?page=encyclopedia');
+                                            }
+                                        }
+
                                         $sql = sprintf("SELECT * FROM Collections WHERE Type = 'Encyclopedia'");
 
                                         if(isset($_POST['search'])) {
@@ -802,6 +1150,9 @@
                                             <thead class="table-dark">
                                                 <tr>
                                                     <th># ssn</th>
+                                                    <?php if(isset($_SESSION['is_Admin'])): ?>
+                                                        <th colspan="2"></th>
+                                                    <?php endif; ?>
                                                     <th>Author</th>
                                                     <th>Title</th>
                                                     <th>Description</th>
@@ -813,6 +1164,18 @@
                                                 <?php while($Encyclopedia = mysqli_fetch_array($result)): ?>
                                                     <tr>
                                                         <td><?=$count?></td>
+                                                        <?php if(isset($_SESSION['is_Admin'])): ?>
+                                                            <td>
+                                                                <a href="index.php?page=add-materials&edit=<?=$Encyclopedia['id']?>" style="font-size:25px;color:Mediumslateblue;">
+                                                                    <span class="fas fa-pencil-alt"></span>Edit
+                                                                </a>
+                                                            </td>
+                                                            <td>
+                                                                <a href="index.php?page=encyclopedia&delete=<?=$Encyclopedia['id']?>" style="font-size:25px;color:Tomato;">
+                                                                    <span class="fas fa-trash-alt"></span>Delete
+                                                                </a>
+                                                            </td>
+                                                         <?php endif; ?>
                                                         <td><?=$Encyclopedia['Author']?></td>
                                                         <td><?=$Encyclopedia['Title']?></td>
                                                         <td><?=$Encyclopedia['Description']?></td>
@@ -848,6 +1211,16 @@
                                 </div>
                                 <div class="card-body">
                                     <?php
+                                        // Delete item from the Database
+                                        if (isset($_GET['delete']) && !empty($_GET['delete'])) {
+                                            $delete_id = (int) $_GET['delete'];
+                                            $sql = sprintf("DELETE FROM Collections WHERE id = '$delete_id'");
+
+                                            if(mysqli_query($connect, $sql)) {
+                                                header('Location: index.php?page=dictionary');
+                                            }
+                                        }
+
                                         $sql = sprintf("SELECT * FROM Collections WHERE Type = 'Dictionary'");
 
                                         if(isset($_POST['search'])) {
@@ -902,6 +1275,9 @@
                                             <thead class="table-dark">
                                                 <tr>
                                                     <th># ssn</th>
+                                                    <?php if(isset($_SESSION['is_Admin'])): ?>
+                                                        <th colspan="2"></th>
+                                                    <?php endif; ?>
                                                     <th>Author</th>
                                                     <th>Title</th>
                                                     <th>Description</th>
@@ -913,6 +1289,18 @@
                                                 <?php while($Dictionary = mysqli_fetch_array($result)): ?>
                                                     <tr>
                                                         <td><?=$count?></td>
+                                                        <?php if(isset($_SESSION['is_Admin'])): ?>
+                                                            <td>
+                                                                <a href="index.php?page=add-materials&edit=<?=$Dictionary['id']?>" style="font-size:25px;color:Mediumslateblue;">
+                                                                    <span class="fas fa-pencil-alt"></span>Edit
+                                                                </a>
+                                                            </td>
+                                                            <td>
+                                                                <a href="index.php?page=dictionary&delete=<?=$Dictionary['id']?>" style="font-size:25px;color:Tomato;">
+                                                                    <span class="fas fa-trash-alt"></span>Delete
+                                                                </a>
+                                                            </td>
+                                                         <?php endif; ?>
                                                         <td><?=$Dictionary['Author']?></td>
                                                         <td><?=$Dictionary['Title']?></td>
                                                         <td><?=$Dictionary['Description']?></td>
@@ -948,6 +1336,16 @@
                                 </div>
                                 <div class="card-body">
                                     <?php
+                                        // Delete item from the Database
+                                        if (isset($_GET['delete']) && !empty($_GET['delete'])) {
+                                            $delete_id = (int) $_GET['delete'];
+                                            $sql = sprintf("DELETE FROM Collections WHERE id = '$delete_id'");
+
+                                            if(mysqli_query($connect, $sql)) {
+                                                header('Location: index.php?page=brochures');
+                                            }
+                                        }
+
                                         $sql = sprintf("SELECT * FROM Collections WHERE Type = 'Brochure'");
 
                                         if(isset($_POST['search'])) {
@@ -1002,6 +1400,9 @@
                                             <thead class="table-dark">
                                                 <tr>
                                                     <th># ssn</th>
+                                                    <?php if(isset($_SESSION['is_Admin'])): ?>
+                                                        <th colspan="2"></th>
+                                                    <?php endif; ?>
                                                     <th>Author</th>
                                                     <th>Title</th>
                                                     <th>Description</th>
@@ -1013,6 +1414,18 @@
                                                 <?php while($Brochures = mysqli_fetch_array($result)): ?>
                                                     <tr>
                                                         <td><?=$count?></td>
+                                                        <?php if(isset($_SESSION['is_Admin'])): ?>
+                                                            <td>
+                                                                <a href="index.php?page=add-materials&edit=<?=$Brochures['id']?>" style="font-size:25px;color:Mediumslateblue;">
+                                                                    <span class="fas fa-pencil-alt"></span>Edit
+                                                                </a>
+                                                            </td>
+                                                            <td>
+                                                                <a href="index.php?page=brochures&delete=<?=$Brochures['id']?>" style="font-size:25px;color:Tomato;">
+                                                                    <span class="fas fa-trash-alt"></span>Delete
+                                                                </a>
+                                                            </td>
+                                                         <?php endif; ?>
                                                         <td><?=$Brochures['Author']?></td>
                                                         <td><?=$Brochures['Title']?></td>
                                                         <td><?=$Brochures['Description']?></td>
@@ -1048,6 +1461,16 @@
                                 </div>
                                 <div class="card-body">
                                     <?php
+                                        // Delete item from the Database
+                                        if (isset($_GET['delete']) && !empty($_GET['delete'])) {
+                                            $delete_id = (int) $_GET['delete'];
+                                            $sql = sprintf("DELETE FROM Collections WHERE id = '$delete_id'");
+
+                                            if(mysqli_query($connect, $sql)) {
+                                                header('Location: index.php?page=year-book');
+                                            }
+                                        }
+
                                         $sql = sprintf("SELECT * FROM Collections WHERE Type = 'Year-Book'");
 
                                         if(isset($_POST['search'])) {
@@ -1101,6 +1524,9 @@
                                             <thead class="table-dark">
                                                 <tr>
                                                     <th># ssn</th>
+                                                    <?php if(isset($_SESSION['is_Admin'])): ?>
+                                                        <th colspan="2"></th>
+                                                    <?php endif; ?>
                                                     <th>Author</th>
                                                     <th>Title</th>
                                                     <th>Description</th>
@@ -1112,6 +1538,18 @@
                                                 <?php while($YearBook = mysqli_fetch_array($result)): ?>
                                                     <tr>
                                                         <td><?=$count?></td>
+                                                        <?php if(isset($_SESSION['is_Admin'])): ?>
+                                                            <td>
+                                                                <a href="index.php?page=add-materials&edit=<?=$YearBook['id']?>" style="font-size:25px;color:Mediumslateblue;">
+                                                                    <span class="fas fa-pencil-alt"></span>Edit
+                                                                </a>
+                                                            </td>
+                                                            <td>
+                                                                <a href="index.php?page=year-book&delete=<?=$YearBook['id']?>" style="font-size:25px;color:Tomato;">
+                                                                    <span class="fas fa-trash-alt"></span>Delete
+                                                                </a>
+                                                            </td>
+                                                         <?php endif; ?>
                                                         <td><?=$YearBook['Author']?></td>
                                                         <td><?=$YearBook['Title']?></td>
                                                         <td><?=$YearBook['Description']?></td>
@@ -1149,14 +1587,13 @@
                                     </div>
                                     <select class="custom-select" name="materials" required>
                                         <option selected>Book</option>
-                                        <option value="">Book</option>
-                                        <option value="">Report</option>
-                                        <option value="">Year-Book</option>
-                                        <option value="">Encylopedia</option>
-                                        <option value="">Journal</option>
-                                        <option value="">Dictionary</option>
-                                        <option value="">Brochure</option>
-                                        <option value="">Periodical</option>
+                                        <option value="Report">Report</option>
+                                        <option value="Year-Book">Year-Book</option>
+                                        <option value="Encyclopedia">Encyclopedia</option>
+                                        <option value="Journal">Journal</option>
+                                        <option value="Dictionary">Dictionary</option>
+                                        <option value="Brochure">Brochure</option>
+                                        <option value="Periodical">Periodical</option>
                                     </select>
                                 </div>
                                 <div class="input-group my-3 px-5">
@@ -1176,6 +1613,7 @@
                             <?php if($_SERVER['REQUEST_METHOD'] == 'POST'): ?>
                                 <?php
                                     $search_type = clean_data($_POST['materials']);
+
                                     $search_item = clean_data($_POST['item']);
                                     $count = 1;
 
@@ -1254,6 +1692,107 @@
                             </address>
                         </div>
                     </div><!-- End of Contact Us page -->
+
+                <?php elseif($page == 'user-guide'): ?>
+                    <div class="row my-5">
+                        <div class="col-md-3">
+
+                        </div>
+                        <div class="col-md-6 border shadow py-2 px-3 m-2" style="font-size:20px;background: rgba(76,76,76,0.2);">
+                            <?php
+                                $user_id = (int) $_SESSION['member_id'];
+
+                                if(isset($_POST['query'])) {
+
+                                    $question = clean_data($_POST['question']);
+
+                                    if(submit_question($question, $user_id)) {
+                                        $success_message = "Querry submitted. <br>Please wait for the feedback from the Librarian.";
+                                    }else {
+                                        $error_message = "Sorry, <br> An Error Occured.Please try again.";
+                                    }
+                                }
+
+                                $sql = sprintf("SELECT * FROM Members WHERE id = '$user_id' AND is_admin = FALSE");
+                                $query = mysqli_query($connect, $sql);
+                                $result = mysqli_fetch_array($query);
+
+                            ?>
+                            <h1 class="text-center font-weight-bolder" style="font-family:'Times New Roman';margin-bottom:40px;">Ask the Librarian</h1>
+                            <?php if(isset($success_message)): ?>
+                                <div class="alert alert-success">
+                                    <p><?=$success_message?></p>
+                                </div>
+                            <?php elseif(isset($error_message)): ?>
+                                <div class="alert alert-danger">
+                                    <p><?=$error_message?></p>
+                                </div>
+                            <?php else: ?>
+                            <?php endif; ?>
+                            <form class="" action="" method="POST">
+                                <h3 class="font-italic" style="font-family:'Times New Roman';margin:20px 30px;">Hello <span class="font-weight-bold"><?=$result['First Name']?></span>, How may I help you?</h3>
+                                <div class="form-group">
+                                    <label for="name">Name</label>
+                                    <input type="text" class="form-control" name="name" value="<?=$result['First Name']." ".$result['Last Name']?>">
+                                </div>
+                                <div class="form-group">
+                                    <label for="question">Question</label>
+                                    <textarea class="form-control" name="question" rows="5" cols="50"></textarea>
+                                </div>
+                                <input type="submit" name="query" class="btn btn-outline-info mb-3" value="Ask Me" style="margin-left:650px;font-size:25px;">
+                            </form>
+                        </div>
+                        <div class="col-md-3">
+
+                        </div>
+                    </div>
+
+                    <!-- Modal Message Reply to User Querry -->
+                    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalCenterTitle">Respond to User's Querry.</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                                </div>
+                                <?php
+                                    $user_id = 0;
+                                    if(isset($_POST['reply'])) {
+                                        $reply_message = clean_data($_POST['message']);
+                                        if(isset($_SESSION['is_Admin'])) {
+                                            $user_id = (int) $_SESSION['is_Admin'];
+                                        }
+                                        else {
+                                            $user_id = (int) $_SESSION['member_id'];
+                                        }
+
+                                        if (submit_question($reply_message, $user_id)) {
+                                            $success_message = "Message reply succesful.";
+                                        }
+                                        else {
+                                            $error_message = "Sorry, <br> Unable to complete the message reply process. <br><br> Only the Librarian can reply to messages.";
+                                        }
+
+                                        $sql = sprintf("UPDATE `Messages` SET `Status` = 'Answered' WHERE `id` = '$question_id'");
+                                    }
+                                ?>
+                                <form class="" action="" method="POST">
+                                    <div class="modal-body">
+                                        <div class="form-group">
+                                            <label for="messages">Reply Messages</label>
+                                            <textarea name="message" rows="4" cols="40"></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                        <input type="submit" name="reply" class="btn btn-primary" value="Reply">
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
 
                 <?php elseif($page == 'about-us'): ?>
                     <!-- About Us Page -->
